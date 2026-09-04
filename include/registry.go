@@ -53,6 +53,10 @@ func OutboundRegistry() *outbound.Registry {
 	return registry
 }
 
+func EndpointRegistry() *endpoint.Registry {
+	return endpoint.NewRegistry()
+}
+
 func DNSTransportRegistry() *dns.TransportRegistry {
 	registry := dns.NewTransportRegistry()
 
@@ -64,10 +68,6 @@ func DNSTransportRegistry() *dns.TransportRegistry {
 	registerQUICTransports(registry)
 
 	return registry
-}
-
-func EndpointRegistry() *endpoint.Registry {
-	return endpoint.NewRegistry()
 }
 
 func ServiceRegistry() *service.Registry {
