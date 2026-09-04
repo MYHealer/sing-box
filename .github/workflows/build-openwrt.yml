@@ -26,6 +26,8 @@ jobs:
       - name: Download sing-box source
         run: |
           VERSION="${{ github.event.inputs.version }}"
+          # Clean everything except .git and openwrt/
+          find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name 'openwrt' -exec rm -rf {} +
           curl -sL "https://github.com/SagerNet/sing-box/archive/refs/tags/${VERSION}.tar.gz" -o source.tar.gz
           tar xzf source.tar.gz --strip-components=1
           rm source.tar.gz
