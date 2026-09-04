@@ -4,8 +4,11 @@ import (
 	"context"
 
 	"github.com/sagernet/sing-box"
+	"github.com/sagernet/sing-box/adapter/certificate"
+	"github.com/sagernet/sing-box/adapter/endpoint"
 	"github.com/sagernet/sing-box/adapter/inbound"
 	"github.com/sagernet/sing-box/adapter/outbound"
+	"github.com/sagernet/sing-box/adapter/service"
 	"github.com/sagernet/sing-box/dns"
 	"github.com/sagernet/sing-box/dns/transport"
 	"github.com/sagernet/sing-box/dns/transport/hosts"
@@ -18,7 +21,7 @@ import (
 )
 
 func Context(ctx context.Context) context.Context {
-	return box.Context(ctx, InboundRegistry(), OutboundRegistry(), DNSTransportRegistry())
+	return box.Context(ctx, InboundRegistry(), OutboundRegistry(), EndpointRegistry(), DNSTransportRegistry(), ServiceRegistry(), CertificateProviderRegistry())
 }
 
 func InboundRegistry() *inbound.Registry {
@@ -61,4 +64,16 @@ func DNSTransportRegistry() *dns.TransportRegistry {
 	registerQUICTransports(registry)
 
 	return registry
+}
+
+func EndpointRegistry() *endpoint.Registry {
+	return endpoint.NewRegistry()
+}
+
+func ServiceRegistry() *service.Registry {
+	return service.NewRegistry()
+}
+
+func CertificateProviderRegistry() *certificate.Registry {
+	return certificate.NewRegistry()
 }
