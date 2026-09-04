@@ -26,11 +26,17 @@ jobs:
       - name: Download sing-box source
         run: |
           VERSION="${{ github.event.inputs.version }}"
+          # Save patches before cleaning
+          cp -r openwrt/patches /tmp/patches 2>/dev/null || true
           # Clean everything except .git and openwrt/
           find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name 'openwrt' -exec rm -rf {} +
           curl -sL "https://github.com/SagerNet/sing-box/archive/refs/tags/${VERSION}.tar.gz" -o source.tar.gz
           tar xzf source.tar.gz --strip-components=1
           rm source.tar.gz
+          # Apply patches
+          for patch in /tmp/patches/*.patch; do
+            [ -f "$patch" ] && git apply "$patch" && echo "Applied: $patch"
+          done
 
       - name: Build mipsle-softfloat
         env:
