@@ -13,7 +13,7 @@ start() {
     export GOMEMLIMIT=40MiB
 
     mkdir -p /var/run /var/lock
-    /usr/bin/sing-box-tiny run -c /etc/sing-box/config.json > /dev/null 2>&1 &
+    /usr/bin/sing-box-tiny run -c /etc/sing-box/config.json </dev/null >/dev/null 2>&1 &
     echo $! > /var/run/sing-box-tiny.pid
 }
 

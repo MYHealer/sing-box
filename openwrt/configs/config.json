@@ -29,6 +29,16 @@
       {
         "outbound": "direct",
         "domain_suffix": [
+          ".miclaw.xiaomi.net", ".xiaomi.net", ".account.xiaomi.com",
+          ".opencode.ai",
+          ".copilot.tencent.com",
+          ".trae.cn", ".mchost.guru",
+          ".volcengine.com", ".volces.com"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
           ".163.com", ".126.com", ".126.net", ".netease.com", ".netease.im",
           ".neteasemusic.com", ".music.163.com", ".music.126.net",
           ".cloudmusicapp.com", ".ydl.netease.com", ".nosdn.127.net",
