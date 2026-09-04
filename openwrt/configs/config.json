@@ -1,12 +1,7 @@
 {
   "log": { "level": "warn" },
   "inbounds": [
-    {
-      "type": "mixed",
-      "tag": "in",
-      "listen": "0.0.0.0",
-      "listen_port": 7890
-    }
+    { "type": "mixed", "tag": "in", "listen": "0.0.0.0", "listen_port": 7890 }
   ],
   "outbounds": [
     {
@@ -35,38 +30,90 @@
         "outbound": "direct",
         "domain_suffix": [
           ".163.com", ".126.com", ".126.net", ".netease.com", ".netease.im",
-          ".neteasemusic.com", ".music.163.com", ".cloudmusicapp.com",
-          ".bilibili.com", ".bilibili.tv", ".hdslb.com", ".b23.tv", ".bilivideo.com",
-          ".qq.com", ".weixin.qq.com", ".tencent.com", ".gtimg.cn", ".qpic.cn",
-          ".tencentyun.com", ".qcloud.com", ".myqcloud.com", ".dnspod.cn",
-          ".taobao.com", ".tmall.com", ".alibaba.com", ".alicdn.com",
-          ".aliyun.com", ".alipay.com", ".1688.com", ".cainiao.com",
-          ".baidu.com", ".bdstatic.com", ".bdimg.com", ".baidupcs.com",
-          ".jd.com", ".jd.hk", ".360buyimg.com", ".jdcloud.com",
-          ".douyin.com", ".bytedance.com", ".byteimg.com", ".toutiao.com",
-          ".xiaomi.com", ".mi.com", ".miui.com", ".mipay.com",
-          ".huawei.com", ".hicloud.com", ".vmall.com", ".huaweicloud.com",
-          ".weibo.com", ".sina.com", ".sinaimg.com",
-          ".zhihu.com", ".zhimg.com",
-          ".meituan.com", ".dianping.com",
-          ".pinduoduo.com", ".yangkeduo.com",
-          ".douyu.com", ".huya.com",
-          ".iqiyi.com", ".qiyi.com",
-          ".youku.com", ".tudou.com",
-          ".kuaishou.com",
-          ".ximalaya.com",
-          ".ctrip.com", ".trip.com",
-          ".58.com", ".ganji.com",
-          ".cnblogs.com", ".csdn.net", ".jianshu.com",
-          ".gitee.com",
-          ".12306.cn",
-          ".apple.com", ".icloud.com",
-          ".microsoft.com", ".windows.com", ".office.com", ".office365.com",
-          ".cn", ".中国"
+          ".neteasemusic.com", ".music.163.com", ".music.126.net",
+          ".cloudmusicapp.com", ".ydl.netease.com", ".nosdn.127.net",
+          ".nosdn.netease.com", ".stun.163.com", ".qiye.163.com"
         ]
       },
-      { "rule_set": "cn", "outbound": "direct" },
-      { "rule_set": "cncidr", "outbound": "direct" },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".bilibili.com", ".bilibili.tv", ".hdslb.com", ".b23.tv",
+          ".bilivideo.com", ".acgvideo.com", ".iqiyi.com", ".qiyi.com",
+          ".qy.net", ".youku.com", ".tudou.com", ".douyu.com", ".huya.com",
+          ".kuaishou.com", ".gifshow.com", ".ximalaya.com", ".mgtv.com"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".qq.com", ".weixin.qq.com", ".tencent.com", ".gtimg.cn",
+          ".qpic.cn", ".tencent-cloud.com", ".tencentyun.com", ".qcloud.com",
+          ".myqcloud.com", ".dnspod.cn", ".idqqimg.com", ".qlogo.cn"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".taobao.com", ".tmall.com", ".alibaba.com", ".alicdn.com",
+          ".aliyun.com", ".alipay.com", ".1688.com", ".cainiao.com",
+          ".mmstat.com", ".tbcdn.cn", ".dingtalk.com", ".yuque.com"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".baidu.com", ".bdstatic.com", ".bdimg.com", ".baidupcs.com",
+          ".baidubce.com", ".bcebos.com", ".baidu.cn"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".jd.com", ".jd.hk", ".360buy.com", ".jdcloud.com", ".360buyimg.com"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".douyin.com", ".bytedance.com", ".byteimg.com", ".toutiao.com",
+          ".snssdk.com", ".pstatp.com", ".bytecdn.cn", ".feishu.cn"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".xiaomi.com", ".mi.com", ".miui.com", ".mipay.com", ".duokan.com",
+          ".miwifi.com", ".huawei.com", ".hicloud.com", ".vmall.com",
+          ".huaweicloud.com", ".oppo.com", ".oppomobile.com", ".vivo.com"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".weibo.com", ".sina.com", ".sinaimg.com", ".weibo.cn",
+          ".zhihu.com", ".zhimg.com", ".douban.com", ".doubanio.com",
+          ".meituan.com", ".dianping.com", ".pinduoduo.com", ".yangkeduo.com"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".ctrip.com", ".trip.com", ".58.com", ".ganji.com",
+          ".liepin.com", ".zhipin.com", ".gitee.com", ".coding.net",
+          ".cnblogs.com", ".csdn.net", ".jianshu.com", ".12306.cn"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          ".qhimg.com", ".qhmsg.com", ".qihucdn.com", ".360.cn", ".360safe.com",
+          ".so.com", ".cdnv2.com", ".clouddn.com"
+        ]
+      },
+      { "outbound": "direct", "domain_suffix": [".cn"] },
+      { "outbound": "direct", "rule_set": "cn" },
+      { "outbound": "direct", "rule_set": "cncidr" },
       { "ip_is_private": true, "outbound": "direct" }
     ],
     "rule_set": [
@@ -78,9 +125,28 @@
   "dns": {
     "servers": [
       { "type": "udp", "tag": "local", "server": "119.29.29.29", "detour": "direct" },
-      { "type": "udp", "tag": "proxy-dns", "server": "8.8.8.8", "detour": "proxy" }
+      { "type": "udp", "tag": "alidns", "server": "223.5.5.5", "detour": "direct" },
+      { "type": "udp", "tag": "proxy-dns", "server": "8.8.8.8", "detour": "proxy" },
+      { "type": "udp", "tag": "proxy-dns2", "server": "1.1.1.1", "detour": "proxy" }
     ],
     "rules": [
+      {
+        "domain_suffix": [
+          ".163.com", ".126.com", ".126.net", ".netease.com", ".netease.im",
+          ".neteasemusic.com", ".music.163.com", ".music.126.net", ".cloudmusicapp.com"
+        ],
+        "server": "local"
+      },
+      {
+        "domain_suffix": [
+          ".bilibili.com", ".hdslb.com", ".b23.tv", ".qq.com", ".tencent.com",
+          ".weixin.qq.com", ".taobao.com", ".tmall.com", ".alibaba.com",
+          ".baidu.com", ".bdstatic.com", ".jd.com", ".360buyimg.com",
+          ".douyin.com", ".bytedance.com", ".xiaomi.com", ".mi.com",
+          ".weibo.com", ".sina.com", ".zhihu.com", ".meituan.com", ".cn"
+        ],
+        "server": "alidns"
+      },
       { "rule_set": "cn", "server": "local" }
     ],
     "final": "proxy-dns"
