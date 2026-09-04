@@ -117,8 +117,16 @@
       { "ip_is_private": true, "outbound": "direct" }
     ],
     "rule_set": [
-      { "type": "local", "tag": "cn", "format": "binary", "path": "/etc/sing-box/ruleset/cn.srs" },
-      { "type": "local", "tag": "cncidr", "format": "binary", "path": "/etc/sing-box/ruleset/cncidr.srs" }
+      {
+        "type": "remote", "tag": "cn", "format": "binary",
+        "url": "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version5/cn.srs",
+        "update_interval": "168h"
+      },
+      {
+        "type": "remote", "tag": "cncidr", "format": "binary",
+        "url": "https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version5/cncidr.srs",
+        "update_interval": "168h"
+      }
     ],
     "final": "proxy"
   },
