@@ -5,8 +5,7 @@ USE_PROCD=1
 
 start_service() {
     procd_open_instance sing-box-tiny
-    procd_set_param command /usr/bin/sing-box-tiny run -c /etc/sing-box/config.json
-    procd_set_param env GOGC=20 GOMEMLIMIT=40MiB
+    procd_set_param command /usr/bin/sing-box-wrapper run -c /etc/sing-box/config.json
     procd_set_param respawn
     procd_set_param stdout 1
     procd_set_param stderr 1

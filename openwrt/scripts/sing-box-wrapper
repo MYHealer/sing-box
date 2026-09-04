@@ -1,0 +1,5 @@
+#!/bin/sh
+# sing-box wrapper: sets memory optimization env vars before exec
+export GOGC=20
+export GOMEMLIMIT=40MiB
+exec /usr/bin/sing-box-tiny "$@"
