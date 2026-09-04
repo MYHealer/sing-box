@@ -1,31 +1,38 @@
-# sing-box
+# sing-box-tiny
 
-The universal proxy platform.
+Minimal [sing-box](https://github.com/SagerNet/sing-box) build optimized for **OpenWrt low-memory routers** (120MB RAM, mipsel_24kc).
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/sing-box.svg)](https://repology.org/project/sing-box/versions)
+## What this fork adds
 
-## Documentation
+- **Source-level protocol stripping**: ~40 unused packages removed, binary 33MB (vs 40MB+)
+- **Memory optimization**: GOGC=20 + GOMEMLIMIT=40MiB, RSS ~13-16MB
+- **Smart Chinese routing**: 100+ domain rules grouped by service, DNS pollution protection
+- **Remote rule sets**: Auto-update from GitHub weekly
+- **Health check**: Hourly proxy test with automatic node failover
+- **Watchdog**: Auto-restart on crash
 
-https://sing-box.sagernet.org
+## Quick start
+
+See [openwrt/README.md](openwrt/README.md) for deployment guide.
+
+**Build:** Actions → Build OpenWrt mipsle → Run workflow → enter version
+
+**Deploy:** Upload binary + config to router, set up cron
+
+## Build tags
+
+Only `with_quic` is used (TUIC + Hysteria + Hysteria2). All other protocols are stripped at source level.
+
+## Upstream
+
+Based on [SagerNet/sing-box](https://github.com/SagerNet/sing-box). Sync with upstream:
+
+```bash
+git remote add upstream https://github.com/SagerNet/sing-box.git
+git fetch upstream
+git merge upstream/stable --no-edit
+```
 
 ## License
 
-```
-Copyright (C) 2022 by nekohasekai <contact-sagernet@sekai.icu>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-In addition, no derivative work may use the name or imply association
-with this application without prior consent.
-```
+Same as upstream — GPLv3.

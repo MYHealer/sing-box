@@ -1,17 +1,34 @@
-# sing-box OpenWrt Deployment
+# sing-box-tiny
 
-Minimal sing-box build for **OpenWrt mipsel_24kc** low-memory routers (120MB RAM).
+Minimal [sing-box](https://github.com/SagerNet/sing-box) build for **OpenWrt mipsel_24kc** low-memory routers (120MB RAM).
+
+Fork with source-level protocol stripping, memory optimization, and smart routing rules.
+
+## Specs
+
+| Item | Value |
+|------|-------|
+| Target | linux/mipsle/softfloat, CGO disabled |
+| Binary size | ~33MB |
+| RSS | ~13-16MB |
+| Available RAM | ~100MB after startup |
+| Protocols | TUIC, Hysteria, Hysteria2, Direct, SOCKS5, HTTP, Mixed |
 
 ## What's included
 
-- TUIC / Hysteria / Hysteria2 outbound (via `with_quic` tag)
-- Mixed inbound (HTTP + SOCKS5)
-- DNS (UDP direct + proxy)
-- Route rules (rule-set binary format)
+- **QUIC protocols**: TUIC / Hysteria / Hysteria2 (via `with_quic` build tag)
+- **Smart routing**: 100+ Chinese domain suffixes grouped by service category
+- **DNS protection**: Per-category DNS routing to prevent DNS pollution
+- **Remote rule sets**: Auto-update from GitHub every 168h (weekly)
+- **Health check**: Hourly proxy test with automatic failover
+- **Watchdog**: Auto-restart on crash (every 5 min via cron)
+- **Memory optimization**: GOGC=20, GOMEMLIMIT=40MiB
 
 ## What's stripped
 
-No build tags set for: gvisor, wireguard, tailscale, clash_api, ech, acme, dhcp, naive, cloudflared, usbip, ccm, ocm
+Source-level removal of unused protocols (~40 packages):
+
+`shadowsocks` `vmess` `trojan` `vless` `snell` `tor` `ssh` `shadowtls` `anytls` `naive` `wireguard` `openconnect` `openvpn` `tailscale` `tun` `block` `bridge` `group` `fakeip` `mdns` `dhcp` `derp` `ccm` `ocm` `usbip` `acme` `resolved` `api` `ssmapi`
 
 ---
 
@@ -33,93 +50,136 @@ GOOS=linux GOARCH=mipsle GOMIPS=softfloat CGO_ENABLED=0 \
 
 ## Deploy
 
+Replace `ROUTER_IP` with your router address (e.g. `192.168.1.1`).
+
 ### 1. Upload binary
 
 ```bash
-ssh root@192.168.1.1 "/etc/init.d/sing-box-tiny stop 2>/dev/null; rm -f /usr/bin/sing-box-tiny"
-ssh root@192.168.1.1 "rm -rf /tmp/*"
-scp sing-box-tiny root@192.168.1.1:/usr/bin/sing-box-tiny
-ssh root@192.168.1.1 "chmod +x /usr/bin/sing-box-tiny"
+ssh root@ROUTER_IP "/etc/init.d/sing-box-tiny stop 2>/dev/null; rm -f /usr/bin/sing-box-tiny"
+scp sing-box-tiny root@ROUTER_IP:/usr/bin/sing-box-tiny
+ssh root@ROUTER_IP "chmod +x /usr/bin/sing-box-tiny"
 ```
 
 ### 2. Upload config and scripts
 
 ```bash
-# Config
-scp openwrt/configs/config.json root@192.168.1.1:/etc/sing-box/config.json
+# Edit config.json first: set YOUR_SERVER_IP, YOUR_UUID, YOUR_SNI
+scp openwrt/configs/config.json root@ROUTER_IP:/etc/sing-box/config.json
 
 # Scripts
-scp openwrt/scripts/health-check.sh root@192.168.1.1:/etc/sing-box/health-check.sh
-scp openwrt/scripts/switch_node.lua root@192.168.1.1:/etc/sing-box/switch_node.lua
-scp openwrt/scripts/update-rules.sh root@192.168.1.1:/etc/sing-box/update-rules.sh
-scp openwrt/scripts/sing-box-tiny.init root@192.168.1.1:/etc/init.d/sing-box-tiny
+scp openwrt/scripts/health-check.sh root@ROUTER_IP:/etc/sing-box/health-check.sh
+scp openwrt/scripts/switch_node.lua root@ROUTER_IP:/etc/sing-box/switch_node.lua
+scp openwrt/scripts/update-rules.sh root@ROUTER_IP:/etc/sing-box/update-rules.sh
+scp openwrt/scripts/sing-box-tiny.init root@ROUTER_IP:/etc/init.d/sing-box-tiny
 
-ssh root@192.168.1.1 "chmod +x /etc/sing-box/*.sh /etc/init.d/sing-box-tiny"
+ssh root@ROUTER_IP "chmod +x /etc/sing-box/*.sh /etc/init.d/sing-box-tiny"
 ```
 
-### 3. Download rule-set files
+### 3. Start
 
 ```bash
-ssh root@192.168.1.1 "mkdir -p /etc/sing-box/ruleset"
-# Download from PC then scp, or use router proxy:
-ssh root@192.168.1.1 "curl -sL -x http://127.0.0.1:7890 -o /etc/sing-box/ruleset/cn.srs 'https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version5/cn.srs'"
-ssh root@192.168.1.1 "curl -sL -x http://127.0.0.1:7890 -o /etc/sing-box/ruleset/cncidr.srs 'https://github.com/QuixoticHeart/rule-set/raw/refs/heads/ruleset/singbox/version5/cncidr.srs'"
+ssh root@ROUTER_IP "/etc/init.d/sing-box-tiny enable"
+ssh root@ROUTER_IP "/etc/init.d/sing-box-tiny start"
 ```
 
-### 4. Start
+### 4. Set up cron
 
 ```bash
-ssh root@192.168.1.1 "/etc/init.d/sing-box-tiny enable"
-ssh root@192.168.1.1 "/etc/init.d/sing-box-tiny start"
+# Health check every hour (auto failover)
+ssh root@ROUTER_IP "echo '0 * * * * /etc/sing-box/health-check.sh' >> /etc/crontabs/root"
+# Rule-set update every Sunday 3AM (backup for remote auto-update)
+ssh root@ROUTER_IP "echo '0 3 * * 0 /etc/sing-box/update-rules.sh' >> /etc/crontabs/root"
+# Watchdog: restart if crashed
+ssh root@ROUTER_IP "echo '*/5 * * * * pgrep sing-box-tiny || /etc/init.d/sing-box-tiny start' >> /etc/crontabs/root"
+ssh root@ROUTER_IP "/etc/init.d/cron restart"
 ```
 
-### 5. Set up cron
+### 5. Verify
 
 ```bash
-# Health check every hour
-ssh root@192.168.1.1 "echo '0 * * * * /etc/sing-box/health-check.sh' >> /etc/crontabs/root"
-# Rule-set update every Sunday 3AM
-ssh root@192.168.1.1 "echo '0 3 * * 0 /etc/sing-box/update-rules.sh' >> /etc/crontabs/root"
-ssh root@192.168.1.1 "/etc/init.d/cron restart"
-```
-
-### 6. Verify
-
-```bash
-# Proxy test
-curl -sL -x http://192.168.1.1:7890 -o /dev/null -w "%{http_code}" https://www.youtube.com
+# Proxy test (via router)
+curl -sL -x http://ROUTER_IP:7890 -o /dev/null -w "%{http_code}" https://www.google.com
 # Expected: 200
 
 # Direct test
-curl -sL -o /dev/null -w "%{http_code}" http://www.baidu.com
+curl -sL -o /dev/null -w "%{http_code}" https://music.163.com
 # Expected: 200
 ```
 
 ---
 
-## Memory optimization
+## Routing algorithm
 
-The init script sets `GOGC=20` and `GOMEMLIMIT=40MiB` for aggressive garbage collection. Expected RSS: ~15-18MB (vs ~20MB without).
+### Rule priority (top to bottom)
 
-| Item | Value |
-|------|-------|
-| Binary size | ~35MB |
-| RSS (GOGC=20) | ~15-18MB |
-| Total RAM | 120MB |
+1. **DNS hijack** — intercept all DNS queries
+2. **NetEase Cloud Music** — force direct (anti-proxy-detection)
+3. **Video/Live** — Bilibili, iQiyi, Youku, Douyu, Huya, etc.
+4. **Tencent** — QQ, WeChat, Tencent Cloud
+5. **Alibaba** — Taobao, Tmall, Aliyun, Alipay
+6. **Baidu** — Baidu, Baidu Cloud
+7. **JD** — JD.com, JD Cloud
+8. **ByteDance** — Douyin, Toutiao, Feishu
+9. **Device vendors** — Xiaomi, Huawei, OPPO, vivo
+10. **Social** — Weibo, Zhihu, Douban, Meituan, Pinduoduo
+11. **Tools** — Ctrip, 58.com, Gitee, 12306
+12. **CDN/Security** — 360, Qihoo
+13. **`.cn` TLD** — all .cn domains
+14. **cn rule set** — comprehensive Chinese domain list (auto-updates weekly)
+15. **cncidr rule set** — Chinese IP ranges (auto-updates weekly)
+16. **Private IP** — RFC1918 addresses
+17. **Final** — everything else goes through proxy
+
+### DNS routing
+
+| DNS Server | Used For | Purpose |
+|------------|----------|---------|
+| 119.29.29.29 (Tencent) | NetEase, cn rule set | Prevent DNS pollution for sensitive apps |
+| 223.5.5.5 (Alibaba) | Bilibili, Tencent, Alibaba, Baidu, JD, etc. | Fast local DNS for major services |
+| 8.8.8.8 (Google) | Everything else | Via proxy, encrypted |
+| 1.1.1.1 (Cloudflare) | Backup | Via proxy, encrypted |
+
+### Rule set auto-update
+
+Remote rule sets (`cn.srs`, `cncidr.srs`) auto-download from GitHub every **168 hours (weekly)** on sing-box startup. Manual update:
+
+```bash
+ssh root@ROUTER_IP "/etc/sing-box/update-rules.sh"
+```
+
+---
+
+## Health check & failover
+
+The `health-check.sh` script runs every hour via cron:
+
+1. Test current proxy via `curl -x` to `gstatic.com/generate_204`
+2. If failed, iterate through node list in priority order
+3. Use `switch_node.lua` to safely modify config (only outbound, not DNS)
+4. Restart sing-box and verify
+5. Log to `/tmp/proxy-check.log`
+
+Edit the `NODES` list in `health-check.sh` with your own nodes:
+```sh
+NODES="
+US2|1.2.3.4|54070
+US3|5.6.7.8|54070
+SG1|9.10.11.12|54070
+"
+```
+
+---
 
 ## Upstream sync
 
 ```bash
 git remote add upstream https://github.com/SagerNet/sing-box.git
 git fetch upstream
-git merge upstream/main --no-edit
-git push origin main
+git merge upstream/stable --no-edit
+git push origin testing
 # Then trigger build workflow with new version tag
 ```
 
-## Node switching
+## License
 
-Edit `config.json` outbound section, or use the health check script which auto-failovers:
-- Priority: US2 → US3 → SG1 → SG2 → ... → DE2
-- Checks every hour via cron
-- Logs to `/tmp/proxy-check.log`
+Same as upstream sing-box — GPLv3.
