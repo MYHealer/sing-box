@@ -1,0 +1,66 @@
+name: Build OpenWrt mipsle
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'sing-box version (e.g. v1.14.0)'
+        required: true
+        default: 'v1.14.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Download sing-box source
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          curl -sL "https://github.com/SagerNet/sing-box/archive/refs/tags/${VERSION}.tar.gz" -o source.tar.gz
+          tar xzf source.tar.gz --strip-components=1
+          rm source.tar.gz
+
+      - name: Build mipsle-softfloat
+        env:
+          GOOS: linux
+          GOARCH: mipsle
+          GOMIPS: softfloat
+          CGO_ENABLED: '0'
+        run: |
+          go build -trimpath \
+            -ldflags="-s -w -X runtime.godebugDefault=multipathtcp=0,tlssha1=1 -checklinkname=0" \
+            -tags "with_quic" \
+            -o sing-box-tiny \
+            ./cmd/sing-box
+
+      - name: Check binary
+        run: |
+          ls -lh sing-box-tiny
+          file sing-box-tiny
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}-tiny
+          name: sing-box ${{ github.event.inputs.version }} tiny
+          files: sing-box-tiny
+          body: |
+            Minimal sing-box build for OpenWrt mipsel_24kc (120MB RAM routers)
+
+            **Target:** linux/mipsle/softfloat, CGO disabled
+            **Tags:** with_quic (TUIC + Hysteria + Hysteria2)
+            **Stripped:** gvisor, wireguard, tailscale, clash_api, ech, acme, dhcp, naive, cloudflared, usbip, ccm, ocm
+
+            **Runtime optimization:**
+            - GOGC=20 (aggressive GC, ~30% less RSS)
+            - GOMEMLIMIT=40MiB (soft memory cap)

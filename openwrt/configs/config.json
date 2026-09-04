@@ -1,0 +1,54 @@
+{
+  "log": { "level": "warn" },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "in",
+      "listen": "0.0.0.0",
+      "listen_port": 7890
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "tuic",
+      "tag": "proxy",
+      "server": "168.222.0.35",
+      "server_port": 19811,
+      "uuid": "YOUR_UUID",
+      "password": "YOUR_UUID",
+      "congestion_control": "bbr",
+      "heartbeat": "10s",
+      "tls": {
+        "enabled": true,
+        "server_name": "mask.icloud.com",
+        "alpn": ["h3"],
+        "insecure": true
+      }
+    },
+    { "type": "direct", "tag": "direct", "domain_resolver": "local" }
+  ],
+  "route": {
+    "default_domain_resolver": "local",
+    "rules": [
+      { "protocol": "dns", "action": "hijack-dns" },
+      { "rule_set": "cn", "outbound": "direct" },
+      { "rule_set": "cncidr", "outbound": "direct" },
+      { "ip_is_private": true, "outbound": "direct" }
+    ],
+    "rule_set": [
+      { "type": "local", "tag": "cn", "format": "binary", "path": "/etc/sing-box/ruleset/cn.srs" },
+      { "type": "local", "tag": "cncidr", "format": "binary", "path": "/etc/sing-box/ruleset/cncidr.srs" }
+    ],
+    "final": "proxy"
+  },
+  "dns": {
+    "servers": [
+      { "type": "udp", "tag": "local", "server": "119.29.29.29", "detour": "direct" },
+      { "type": "udp", "tag": "proxy-dns", "server": "8.8.8.8", "detour": "proxy" }
+    ],
+    "rules": [
+      { "rule_set": "cn", "server": "local" }
+    ],
+    "final": "proxy-dns"
+  }
+}
