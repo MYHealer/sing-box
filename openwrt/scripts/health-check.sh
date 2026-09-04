@@ -7,18 +7,11 @@ PROXY="127.0.0.1:7890"
 CONFIG="/etc/sing-box/config.json"
 LOG="/tmp/proxy-check.log"
 
+# Node list: name|ip|port (priority order)
+# Edit this list with your own nodes
 NODES="
-US2|168.222.0.35|19811
-US3|168.222.0.79|10511
-SG1|140.245.48.46|54070
-SG2|140.245.60.234|20965
-SG3|140.245.56.153|39852
-SG4|140.245.60.3|14767
-KR1|140.238.23.27|13040
-KR2|132.226.170.239|60019
-US1|150.136.229.230|32337
-DE1|78.31.249.129|15762
-DE2|78.31.249.206|37216
+NODE1|1.2.3.4|12345
+NODE2|5.6.7.8|12345
 "
 
 log() {

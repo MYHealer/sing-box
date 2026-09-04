@@ -12,15 +12,15 @@
     {
       "type": "tuic",
       "tag": "proxy",
-      "server": "168.222.0.35",
-      "server_port": 19811,
+      "server": "YOUR_SERVER_IP",
+      "server_port": 0,
       "uuid": "YOUR_UUID",
       "password": "YOUR_UUID",
       "congestion_control": "bbr",
       "heartbeat": "10s",
       "tls": {
         "enabled": true,
-        "server_name": "mask.icloud.com",
+        "server_name": "YOUR_SNI",
         "alpn": ["h3"],
         "insecure": true
       }
