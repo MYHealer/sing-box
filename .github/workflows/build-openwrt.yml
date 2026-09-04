@@ -50,12 +50,6 @@ jobs:
           ls -lh sing-box-tiny
           file sing-box-tiny
 
-      - name: UPX compress
-        run: |
-          sudo apt-get install -y upx-ucl
-          upx --best sing-box-tiny
-          ls -lh sing-box-tiny
-
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
