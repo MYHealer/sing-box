@@ -38,13 +38,7 @@ get_current() {
 
 test_proxy() {
     code=$(curl -sL -x http://$PROXY -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 https://www.gstatic.com/generate_204 2>/dev/null)
-    if [ "$code" = "200" ] || [ "$code" = "204" ]; then
-        sleep 2
-        code2=$(curl -sL -x http://$PROXY -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 https://www.gstatic.com/generate_204 2>/dev/null)
-        [ "$code2" = "200" ] || [ "$code2" = "204" ]
-    else
-        return 1
-    fi
+    [ "$code" = "200" ] || [ "$code" = "204" ]
 }
 
 switch_node() {
