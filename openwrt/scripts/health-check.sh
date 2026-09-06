@@ -1,11 +1,12 @@
 #!/bin/sh
 # sing-box proxy health check + auto failover
 # Runs every hour via cron
-# Priority: US2 → US3 → SG1 → SG2 → SG3 → SG4 → KR1 → KR2 → US1 → DE1 → DE2
 
 PROXY="127.0.0.1:7890"
 CONFIG="/etc/sing-box/config.json"
-LOG="/tmp/proxy-check.log"
+LOG_DIR="/tmp/sing-box-logs"
+TODAY=$(date '+%Y-%m-%d')
+LOG="$LOG_DIR/health-check-$TODAY.log"
 
 # Node list: name|ip|port (priority order)
 # Edit this list with your own nodes
@@ -14,17 +15,36 @@ NODE1|1.2.3.4|12345
 NODE2|5.6.7.8|12345
 "
 
+mkdir -p "$LOG_DIR"
+# Delete logs older than 2 days
+find "$LOG_DIR" -name "health-check-*.log" -mtime +2 -delete 2>/dev/null
+
 log() {
     echo "$(date '+%H:%M:%S') $1" >> "$LOG"
 }
 
 get_current() {
-    sed -n 's/.*"server": *"\([0-9.]*\)".*/\1/p' "$CONFIG" | head -1
+    lua -e '
+        local jsonc = require "luci.jsonc"
+        local f = io.open("'"$CONFIG"'", "r")
+        if not f then os.exit(1) end
+        local cfg = jsonc.parse(f:read("*a"))
+        f:close()
+        if cfg and cfg.outbounds and cfg.outbounds[1] then
+            io.write(cfg.outbounds[1].server or "")
+        end
+    '
 }
 
 test_proxy() {
     code=$(curl -sL -x http://$PROXY -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 https://www.gstatic.com/generate_204 2>/dev/null)
-    [ "$code" = "200" ] || [ "$code" = "204" ]
+    if [ "$code" = "200" ] || [ "$code" = "204" ]; then
+        sleep 2
+        code2=$(curl -sL -x http://$PROXY -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 https://www.gstatic.com/generate_204 2>/dev/null)
+        [ "$code2" = "200" ] || [ "$code2" = "204" ]
+    else
+        return 1
+    fi
 }
 
 switch_node() {
@@ -33,7 +53,7 @@ switch_node() {
     local name="$3"
     lua /etc/sing-box/switch_node.lua "$ip" "$port"
     /etc/init.d/sing-box-tiny restart >/dev/null 2>&1
-    sleep 5
+    sleep 15
     log "Switched to $name ($ip:$port)"
 }
 
@@ -50,12 +70,12 @@ done
 log "Current: ${CURRENT_NAME:-unknown} ($CURRENT_IP)"
 
 if test_proxy; then
-    log "Current node OK"
+    log "OK - current node working"
     log "--- check end ---"
     exit 0
 fi
 
-log "Current node FAILED, searching..."
+log "FAILED - searching for working node..."
 
 for node in $NODES; do
     name=$(echo "$node" | cut -d'|' -f1)
@@ -64,11 +84,11 @@ for node in $NODES; do
     [ "$ip" = "$CURRENT_IP" ] && continue
     switch_node "$ip" "$port" "$name"
     if test_proxy; then
-        log "Failover OK to $name ($ip:$port)"
+        log "OK - failover to $name ($ip:$port)"
         log "--- check end ---"
         exit 0
     else
-        log "$name ($ip:$port) also FAILED"
+        log "FAIL - $name ($ip:$port)"
     fi
 done
 
