@@ -23,8 +23,8 @@ fi
 if [ "$NEED_RESTART" -eq 1 ]; then
     killall sing-box-tiny 2>/dev/null
     sleep 1
-    export GOGC=20
-    export GOMEMLIMIT=40MiB
+    export GOGC=10
+    export GOMEMLIMIT=20MiB
     /usr/bin/sing-box-tiny run -c /etc/sing-box/config.json </dev/null >/dev/null 2>&1 &
     echo "$(date '+%H:%M:%S') watchdog: restarted ($REASON, pid $!)" >> "$LOG"
 fi

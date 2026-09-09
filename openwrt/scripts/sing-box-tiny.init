@@ -9,8 +9,8 @@ start() {
     killall -9 sing-box-tiny 2>/dev/null
     sleep 1
 
-    export GOGC=20
-    export GOMEMLIMIT=40MiB
+    export GOGC=10
+    export GOMEMLIMIT=20MiB
 
     mkdir -p /var/run /var/lock
     /usr/bin/sing-box-tiny run -c /etc/sing-box/config.json </dev/null >/dev/null 2>&1 &
