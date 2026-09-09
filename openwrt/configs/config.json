@@ -12,6 +12,7 @@
       "uuid": "YOUR_UUID",
       "password": "YOUR_UUID",
       "congestion_control": "bbr",
+      "udp_relay_mode": "quic",
       "heartbeat": "10s",
       "tls": {
         "enabled": true,
